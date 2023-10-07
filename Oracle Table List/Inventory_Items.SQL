@@ -1,0 +1,19 @@
+CREATE TABLE Inventory_Items (
+    id VARCHAR2(36) PRIMARY KEY,
+    name VARCHAR2(255),
+    name_localized VARCHAR2(255),
+    sku VARCHAR2(50),
+    barcode VARCHAR2(50),
+    cost NUMBER,
+    minimum_level NUMBER,
+    maximum_level NUMBER,
+    par_level NUMBER,
+    storage_unit VARCHAR2(50),
+    ingredient_unit VARCHAR2(50),
+    storage_to_ingredient_factor NUMBER,
+    costing_method NUMBER,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    is_product VARCHAR2(6)
+);
