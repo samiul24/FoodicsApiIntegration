@@ -43,5 +43,17 @@ CREATE TABLE Orders (
     product_total_cost NUMBER,
     product_tax_exclusive_discount_amount NUMBER,
     product_tax_exclusive_unit_price NUMBER,
-    product_tax_exclusive_total_price NUMBER
+    product_tax_exclusive_total_price NUMBER,
+    payment_id VARCHAR2(36),
+    payment_amount NUMBER,
+    payment_tendered NUMBER,
+    payment_tips NUMBER,
+    combos_id VARCHAR2(36),
+    combos_discount_type VARCHAR2(10),
+    combos_discount_amount NUMBER,
+    combos_quantity NUMBER,
+    charges_charge_id VARCHAR2(36),
+    charges_charge_name VARCHAR2(36),
+    charges_tax_id VARCHAR2(36),
+    charges_tax_name VARCHAR2(36)
     );
