@@ -1,0 +1,33 @@
+drop table Products;
+
+CREATE TABLE Products (
+    product_id VARCHAR2(36) PRIMARY KEY,
+    sku VARCHAR2(255),
+    name VARCHAR2(255),
+    name_localized VARCHAR2(255),
+    description VARCHAR2(255),
+    description_localized VARCHAR2(255),
+    is_active VARCHAR2(10),
+    is_stock_product VARCHAR2(10),
+    is_ready VARCHAR2(10),
+    pricing_method NUMBER(10),
+    selling_method NUMBER(10),
+    costing_method NUMBER(10),
+    price NUMBER(10, 2),
+    cost NUMBER(10, 2),
+    calories NUMBER(10),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    category_id VARCHAR2(36),
+    category_name VARCHAR2(255),
+    discount_id VARCHAR2(36),
+    timed_event_id VARCHAR2(36),
+    tax_group_id VARCHAR2(36),
+    tag_id VARCHAR2(36),
+    group_id VARCHAR2(36),
+    group_name VARCHAR2(255),
+    branch_id VARCHAR2(36),
+    modifier_id VARCHAR2(36),
+    modifier_name VARCHAR2(255)
+);
