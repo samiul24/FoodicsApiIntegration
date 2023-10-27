@@ -5,9 +5,14 @@ from dotenv import load_dotenv
 import requests
 import json
 from dataclasses import dataclass
-import datetime
 import time
+from datetime import datetime, timedelta
 
+# Get the previous date
+previous_date = datetime.now().date()-timedelta(days=1)
+
+# Format the previous date as "YYYY-MM-DD"
+previous_date = previous_date.strftime('%Y-%m-%d')
 
 #read project directory
 env_path = os.path.dirname(__file__).replace('\\','/')
@@ -22,7 +27,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"orders?include=branch,promotion,customer,customer_address,charges,payments,products,combos"
+    url = baseURL+"orders?include=branch,promotion,customer,customer_address,charges,payments,payments.payment_method,products.product,combos&filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -82,10 +87,15 @@ class Orders:
     product_tax_exclusive_discount_amount: float
     product_tax_exclusive_unit_price: float
     product_tax_exclusive_total_price: float
+
     payment_id: str
     payment_amount: float
     payment_tendered: float
     payment_tips: float
+    payment_method_id: str
+    payment_method_name: str
+    payment_method_type: str
+
     combos_id: str
     combos_discount_type: str
     combos_discount_amount: float
@@ -95,7 +105,7 @@ class Orders:
     charges_tax_id: str
     charges_tax_name: str
 
-cursor.execute("truncate table Orders")
+#cursor.execute("truncate table Orders")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -119,7 +129,6 @@ while True:
     rows = []
 
     for item in responseData["data"]:
-        print(1)
         Orders.order_id = item["id"]
         Orders.promotion_id = item["promotion_id"]         
         Orders.discount_type = str(item["discount_type"])
@@ -165,19 +174,26 @@ while True:
                 Orders.payment_amount = payment["amount"]
                 Orders.payment_tendered = payment["tendered"]
                 Orders.payment_tips = payment["tips"]
+                Orders.payment_method_id = payment["payment_method"]["id"]
+                Orders.payment_method_name = payment["payment_method"]["name"]
+                Orders.payment_method_type = payment["payment_method"]["type"]
         else:
             Orders.payment_id = ''
             Orders.payment_amount = 0
             Orders.payment_tendered = 0
             Orders.payment_tips = 0
+            Orders.payment_method_id = ''
+            Orders.payment_method_name = ''
+            Orders.payment_method_type = ''
+
         
         if item["combos"]!=None and len(item["combos"])>0:
             try:
                 for combo in item["combos"]:
                     Orders.combos_id = combo["id"]
-                    Orders.combos_discount_type = combo["combos_discount_type"]
-                    Orders.combos_discount_amount = combo["combos_discount_amount"]
-                    Orders.combos_quantity = combo["combos_quantity"]
+                    Orders.combos_discount_type = combo["discount_type"]
+                    Orders.combos_discount_amount = combo["discount_amount"]
+                    Orders.combos_quantity = combo["quantity"]
             except:
                 Orders.combos_id = ''
                 Orders.combos_discount_type = ''
@@ -220,7 +236,7 @@ while True:
 
         if item["products"]!=None and len(item["products"])>0 :
             for product in item["products"]:
-                Orders.product_id = product["id"]
+                Orders.product_id = product["product"]["id"]
                 Orders.product_discount_type = str(product["discount_type"])
                 Orders.product_quantity = product["quantity"]
                 Orders.product_returned_quantity = product["returned_quantity"]
@@ -244,7 +260,8 @@ while True:
                         Orders.product_tax_exclusive_total_price,
                         Orders.payment_id, Orders.payment_amount, Orders.payment_tendered, Orders.payment_tips,
                         Orders.combos_id, Orders.combos_discount_type, Orders.combos_discount_amount, Orders.combos_quantity,
-                        Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name
+                        Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name,
+                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type
                         )
                 rows.append(tuple_data_details)
 
@@ -260,6 +277,7 @@ while True:
             Orders.product_tax_exclusive_discount_amount = 0
             Orders.product_tax_exclusive_unit_price = 0
             Orders.product_tax_exclusive_total_price = 0
+            #print(item)
             tuple_data_details = (Orders.order_id , Orders.promotion_id , Orders.discount_type , Orders.reference , 
                         Orders.type , Orders.source , Orders.status , Orders.delivery_status , Orders.guests , Orders.kitchen_notes , Orders.customer_notes , 
                         Orders.subtotal_price , Orders.discount_amount , Orders.rounding_amount , Orders.total_price , Orders.tax_exclusive_discount_amount, 
@@ -272,9 +290,10 @@ while True:
                         Orders.product_tax_exclusive_total_price,
                         Orders.payment_id, Orders.payment_amount, Orders.payment_tendered, Orders.payment_tips,
                         Orders.combos_id, Orders.combos_discount_type, Orders.combos_discount_amount, Orders.combos_quantity,
-                        Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name
+                        Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name,
+                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type
                         )
-            rows.append(tuple_data_details)     
+            rows.append(tuple_data_details)
 
 
     #print(rows)
@@ -290,11 +309,12 @@ while True:
                         Orders.product_tax_exclusive_total_price,\
                         Orders.payment_id, Orders.payment_amount, Orders.payment_tendered, Orders.payment_tips,\
                         Orders.combos_id, Orders.combos_discount_type, Orders.combos_discount_amount, Orders.combos_quantity,\
-                        Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name ) \
+                        Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name, \
+                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type ) \
                         values(:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, \
                         TO_DATE(:19,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:20,'YYYY-MM-DD HH24:MI:SS') , TO_DATE(:21,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:22,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:23,'YYYY-MM-DD HH24:MI:SS'),\
                         TO_DATE(:24,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:25,'YYYY-MM-DD HH24:MI:SS') , TO_DATE(:26,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:27,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:28,'YYYY-MM-DD HH24:MI:SS'), \
-                        :29, :30, :31, :32, :33, :34, :35, :36, :37, :38, :39, :40, :41, :42, :43, :44, :45, :46, :47, :48, :49, :50, :51, :52, :53, :54, :55)", rows)
+                        :29, :30, :31, :32, :33, :34, :35, :36, :37, :38, :39, :40, :41, :42, :43, :44, :45, :46, :47, :48, :49, :50, :51, :52, :53, :54, :55, :56, :57, :58)", rows)
     connection.commit()
 
     page += 1
