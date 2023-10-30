@@ -9,5 +9,6 @@ CREATE TABLE House_Account_Transactions(
     customer_id VARCHAR2(50),
     order_id VARCHAR2(50),
     created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    updated_at TIMESTAMP,
+    sys_date date default sysdate
 );

@@ -7,6 +7,13 @@ import json
 from dataclasses import dataclass
 import datetime
 import time
+from datetime import datetime, timedelta
+
+# Get the previous date
+previous_date = datetime.now().date()-timedelta(days=1)
+
+# Format the previous date as "YYYY-MM-DD"
+previous_date = previous_date.strftime('%Y-%m-%d')
 
 #read project directory
 env_path = os.path.dirname(__file__).replace('\\','/')
@@ -22,6 +29,7 @@ cursor = connection.cursor()
 try:
     baseURL = os.environ.get("baseURL")
     url = baseURL+"transfer_orders"
+    url_ext = baseURL+"transfer_orders?filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -62,16 +70,16 @@ class Transfer_Orders:
     poster_id: str
     poster_name: str
 
-cursor.execute("truncate table Transfer_Orders")
+#cursor.execute("truncate table Transfer_Orders")
 page = 1
 while True:
-    params = {'page': page, 'per_page': 50}
+    params = {'page': page, 'per_page': 500}
 
     current_attempt_m = 0 #current attempt on master api
     max_attempts_m = 5
     while current_attempt_m < max_attempts_m:
         try:
-            response = requests.request("GET", url, headers=headers, data=payload, params=params)
+            response = requests.request("GET", url_ext, headers=headers, data=payload, params=params)
             if response.status_code==200:
                 current_attempt_m = max_attempts_m
                 responseDataMaster=response.json()
@@ -141,7 +149,7 @@ while True:
                     pass
         except KeyError:
             pass
-    print(details_rows)
+    #print(details_rows)
     try:
         cursor.executemany("insert into Transfer_Orders (transfer_order_id, business_date, reference, \
                        status, notes, decline_reason, created_at, updated_at,\

@@ -22,5 +22,6 @@ CREATE TABLE Transfer_Orders (
     creator_id VARCHAR2(36 CHAR),
     creator_name VARCHAR2(255),
     poster_id VARCHAR2(36 CHAR),
-    poster_name VARCHAR2(255)
+    poster_name VARCHAR2(255),
+    sys_date date default sysdate
 );

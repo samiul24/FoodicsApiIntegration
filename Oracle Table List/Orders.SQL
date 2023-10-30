@@ -58,5 +58,6 @@ CREATE TABLE Orders (
     charges_charge_id VARCHAR2(36),
     charges_charge_name VARCHAR2(36),
     charges_tax_id VARCHAR2(36),
-    charges_tax_name VARCHAR2(36)
+    charges_tax_name VARCHAR2(36),
+    sys_date date default sysdate
     );

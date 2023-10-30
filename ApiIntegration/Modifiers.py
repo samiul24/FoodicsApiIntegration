@@ -7,6 +7,13 @@ import json
 from dataclasses import dataclass
 import datetime
 import time
+from datetime import datetime, timedelta
+
+# Get the previous date
+previous_date = datetime.now().date()-timedelta(days=1)
+
+# Format the previous date as "YYYY-MM-DD"
+previous_date = previous_date.strftime('%Y-%m-%d')
 
 
 #read project directory
@@ -22,7 +29,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"modifiers"
+    url = baseURL+"modifiers?filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -47,7 +54,7 @@ class Modifiers:
     updated_at: datetime
     deleted_at: datetime
 
-cursor.execute("truncate table Modifiers")
+#cursor.execute("truncate table Modifiers")
 page = 1
 while True:
     params = {'page': page, 'per_page': 500}

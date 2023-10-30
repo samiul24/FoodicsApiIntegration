@@ -29,5 +29,6 @@ CREATE TABLE Products (
     group_name VARCHAR2(255),
     branch_id VARCHAR2(36),
     modifier_id VARCHAR2(36),
-    modifier_name VARCHAR2(255)
+    modifier_name VARCHAR2(255),
+    sys_date date default sysdate
 );

@@ -30,5 +30,6 @@ CREATE TABLE Purchase_Orders (
     creator_id VARCHAR2(36),
     creator_name VARCHAR2(255),
     poster_id VARCHAR2(36),
-    poster_name VARCHAR2(255)
+    poster_name VARCHAR2(255),
+    sys_date date default sysdate
 );

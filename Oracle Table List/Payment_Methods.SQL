@@ -9,5 +9,6 @@ CREATE TABLE Payment_Methods (
     is_active VARCHAR2(10), 
     created_at TIMESTAMP, 
     updated_at TIMESTAMP, 
-    deleted_at TIMESTAMP 
+    deleted_at TIMESTAMP,
+    sys_date date default sysdate
 );

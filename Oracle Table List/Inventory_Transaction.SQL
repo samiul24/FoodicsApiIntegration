@@ -34,5 +34,6 @@ CREATE TABLE Inventory_Transaction (
     invoice_date DATE,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    posted_at TIMESTAMP
+    posted_at TIMESTAMP,
+    sys_date date default sysdate
 );

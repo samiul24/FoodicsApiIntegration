@@ -20,5 +20,6 @@ CREATE TABLE Discounts (
     category_id VARCHAR2(36),
     combo_id VARCHAR2(36),
     branch_id VARCHAR2(36),
-    branch_name VARCHAR2(50)
+    branch_name VARCHAR2(50),
+    sys_date date default sysdate
 );

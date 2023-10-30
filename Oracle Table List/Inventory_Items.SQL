@@ -15,5 +15,6 @@ CREATE TABLE Inventory_Items (
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     deleted_at TIMESTAMP,
-    is_product VARCHAR2(6)
+    is_product VARCHAR2(6),
+    sys_date date default sysdate
 );

@@ -7,6 +7,13 @@ import json
 from dataclasses import dataclass
 import datetime
 import time
+from datetime import datetime, timedelta
+
+# Get the previous date
+previous_date = datetime.now().date()-timedelta(days=1)
+
+# Format the previous date as "YYYY-MM-DD"
+previous_date = previous_date.strftime('%Y-%m-%d')
 
 
 #read project directory
@@ -23,6 +30,7 @@ cursor = connection.cursor()
 try:
     baseURL = os.environ.get("baseURL")
     url = baseURL+"inventory_transactions"
+    url_ext = baseURL+"inventory_transactions?filter[created_on]="+previous_date  
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -75,17 +83,17 @@ class InvTran:
     updated_at: datetime
     posted_at: datetime
 
-cursor.execute("truncate table INVENTORY_TRANSACTION")
+#cursor.execute("truncate table INVENTORY_TRANSACTION")
 page = 1
 
 while True:
-    params = {'page': page, 'per_page': 50}
+    params = {'page': page, 'per_page': 500}
 
     current_attempt_m = 0 #current attempt on master api
     max_attempts_m = 5
     while current_attempt_m < max_attempts_m:
         try:
-            response = requests.request("GET", url, headers=headers, data=payload, params=params)
+            response = requests.request("GET", url_ext, headers=headers, data=payload, params=params)
             if response.status_code==200:
                 current_attempt_m = max_attempts_m
                 responseDataMaster=response.json()

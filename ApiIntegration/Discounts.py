@@ -5,9 +5,14 @@ from dotenv import load_dotenv
 import requests
 import json
 from dataclasses import dataclass
-import datetime
+from datetime import datetime, timedelta
 import time
 
+# Get the previous date
+previous_date = datetime.now().date()-timedelta(days=1)
+
+# Format the previous date as "YYYY-MM-DD"
+previous_date = previous_date.strftime('%Y-%m-%d')
 
 #read project directory
 env_path = os.path.dirname(__file__).replace('\\','/')
@@ -22,7 +27,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"discounts?include=products,product_tags,categories,combos,branches"
+    url = baseURL+"discounts?include=products,product_tags,categories,combos,branches&filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -59,7 +64,7 @@ class Discounts:
     branch_id: str
     branch_name: str
 
-cursor.execute("truncate table Discounts")
+#cursor.execute("truncate table Discounts")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -97,7 +102,7 @@ while True:
         Discounts.created_at = item["created_at"]
         Discounts.updated_at = item["updated_at"]
         Discounts.deleted_at = item["deleted_at"]
-        print(Discounts.order_types)
+        #print(Discounts.order_types)
 
         if item["products"]!=None and len(item["products"])>0:
             for product in item["products"]:

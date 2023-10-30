@@ -7,5 +7,6 @@ CREATE TABLE Modifiers (
     reference VARCHAR2(255),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    deleted_at TIMESTAMP    
+    deleted_at TIMESTAMP,
+    sys_date date default sysdate
 );

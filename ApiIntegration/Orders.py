@@ -27,7 +27,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"orders?include=branch,promotion,customer,customer_address,charges,payments,payments.payment_method,products.product,combos&filter[created_on]="+previous_date
+    url = baseURL+"orders?include=branch,promotion,customer,customer_address,charges,payments,payments.payment_method,products.product,combos"#&filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -105,7 +105,7 @@ class Orders:
     charges_tax_id: str
     charges_tax_name: str
 
-#cursor.execute("truncate table Orders")
+cursor.execute("truncate table Orders")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -139,7 +139,8 @@ while True:
         Orders.delivery_status = str(item["delivery_status"])          
         Orders.guests = str(item["guests"])
         Orders.kitchen_notes = item["kitchen_notes"]
-        Orders.customer_notes = item["customer_notes"]             
+        Orders.customer_notes = item["customer_notes"]
+        Orders.business_date = item["business_date"]         
         Orders.subtotal_price = item["subtotal_price"]
         Orders.discount_amount = item["discount_amount"]                  
         Orders.rounding_amount = item["rounding_amount"]
@@ -261,7 +262,7 @@ while True:
                         Orders.payment_id, Orders.payment_amount, Orders.payment_tendered, Orders.payment_tips,
                         Orders.combos_id, Orders.combos_discount_type, Orders.combos_discount_amount, Orders.combos_quantity,
                         Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name,
-                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type
+                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type, Orders.business_date
                         )
                 rows.append(tuple_data_details)
 
@@ -291,7 +292,7 @@ while True:
                         Orders.payment_id, Orders.payment_amount, Orders.payment_tendered, Orders.payment_tips,
                         Orders.combos_id, Orders.combos_discount_type, Orders.combos_discount_amount, Orders.combos_quantity,
                         Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name,
-                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type
+                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type,Orders.business_date
                         )
             rows.append(tuple_data_details)
 
@@ -310,11 +311,11 @@ while True:
                         Orders.payment_id, Orders.payment_amount, Orders.payment_tendered, Orders.payment_tips,\
                         Orders.combos_id, Orders.combos_discount_type, Orders.combos_discount_amount, Orders.combos_quantity,\
                         Orders.charges_charge_id, Orders.charges_charge_name, Orders.charges_tax_id,  Orders.charges_tax_name, \
-                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type ) \
+                        Orders.payment_method_id, Orders.payment_method_name, Orders.payment_method_type, Orders.business_date ) \
                         values(:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, \
                         TO_DATE(:19,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:20,'YYYY-MM-DD HH24:MI:SS') , TO_DATE(:21,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:22,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:23,'YYYY-MM-DD HH24:MI:SS'),\
                         TO_DATE(:24,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:25,'YYYY-MM-DD HH24:MI:SS') , TO_DATE(:26,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:27,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:28,'YYYY-MM-DD HH24:MI:SS'), \
-                        :29, :30, :31, :32, :33, :34, :35, :36, :37, :38, :39, :40, :41, :42, :43, :44, :45, :46, :47, :48, :49, :50, :51, :52, :53, :54, :55, :56, :57, :58)", rows)
+                        :29, :30, :31, :32, :33, :34, :35, :36, :37, :38, :39, :40, :41, :42, :43, :44, :45, :46, :47, :48, :49, :50, :51, :52, :53, :54, :55, :56, :57, :58, TO_DATE(:59,'YYYY-MM-DD HH24:MI:SS'))", rows)
     connection.commit()
 
     page += 1

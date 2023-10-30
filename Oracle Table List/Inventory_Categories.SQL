@@ -5,5 +5,6 @@ CREATE TABLE Inventory_Categories (
     reference VARCHAR2(50),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMP,
+    sys_date date default sysdate
 );

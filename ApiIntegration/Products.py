@@ -7,6 +7,13 @@ import json
 from dataclasses import dataclass
 import datetime
 import time
+from datetime import datetime, timedelta
+
+# Get the previous date
+previous_date = datetime.now().date()-timedelta(days=1)
+
+# Format the previous date as "YYYY-MM-DD"
+previous_date = previous_date.strftime('%Y-%m-%d')
 
 
 #read project directory
@@ -22,8 +29,8 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"products?include=discounts,timed_events,category,tax_group,tags,groups,branches,modifiers"
-    #print(url)
+    url = baseURL+"products?include=discounts,timed_events,category,tax_group,tags,groups,branches,modifiers"#?filter[created_on]="+previous_date
+    print(url)
     Authorization = os.environ.get("Authorization")
 except:
     pass
@@ -67,6 +74,7 @@ class Products:
     branch_id: str
     modifier_id: str
     modifier_name: str
+
 cursor.execute("truncate table Products")
 page = 1
 while True:
@@ -86,6 +94,7 @@ while True:
 
     objects = responseData["data"]
     if len(objects)==0:
+        print(1)
         exit()
         
     rows = []
