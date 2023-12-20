@@ -14,7 +14,10 @@ previous_date = datetime.now().date()-timedelta(days=1)
 
 # Format the previous date as "YYYY-MM-DD"
 previous_date = previous_date.strftime('%Y-%m-%d')
+previous_date = '2023-11-19'
+print(previous_date)
 
+#exit()
 
 #read project directory
 env_path = os.path.dirname(__file__).replace('\\','/')
@@ -29,10 +32,12 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"purchase_orders"
-    url_ext = baseURL+"purchase_orders?filter[created_on]="+previous_date
-    #print(url)
+    url = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster"#&filter[created_on]="+previous_date
+    url_ext = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster"#&filter[created_on]="+previous_date
+    print(url)
+    
     Authorization = os.environ.get("Authorization")
+    #exit()
 except:
     pass
 
@@ -80,10 +85,10 @@ class Purchase_Orders:
     submitted_at: datetime
 
 
-#cursor.execute("truncate table Purchase_Orders")
+cursor.execute("truncate table Purchase_Orders")
 page = 1
 while True:
-    params = {'page': page, 'per_page': 500}
+    params = {'page': page, 'per_page': 10000}
 
     current_attempt_m = 0 #current attempt on master api
     max_attempts_m = 5
@@ -104,10 +109,12 @@ while True:
     master_rows = []
     details_rows = []
     for item in responseDataMaster["data"]:
+        #print(item)
         Purchase_Orders.purchase_order_id = item["id"]
         Purchase_Orders.business_date = item["business_date"]
         Purchase_Orders.delivery_date = item["delivery_date"]
         Purchase_Orders.reference = item["reference"]
+        #print(Purchase_Orders.reference)
         Purchase_Orders.additional_cost = item["additional_cost"]
         Purchase_Orders.status = item["status"]
         Purchase_Orders.notes = item["notes"]
@@ -117,43 +124,49 @@ while True:
         Purchase_Orders.closed_at = item["closed_at"]
         Purchase_Orders.submitted_at = item["submitted_at"]
 
-        current_attempt_d = 0
-        max_attempts_d = 5
-        while current_attempt_d<max_attempts_d:
-            try:
-                response = requests.request("GET", url+"/"+item["id"], headers=headers, data=payload)
-                if response.status_code==200:
-                    current_attempt_d = max_attempts_d
-                    responseDataDetails=response.json()
-            except:
-                time.sleep(60)
-                current_attempt_d +=1
+        Purchase_Orders.supplier_id = item["supplier"]["id"]
+        Purchase_Orders.supplier_name = item["supplier"]["name"]
 
         try:
-            for item in responseDataDetails["data"]["items"]:
-                try:
-                    Purchase_Orders.item_id = item["id"]
-                    Purchase_Orders.item_name = item["name"]
-                    Purchase_Orders.item_quantity = item["pivot"]["quantity"]
-                    Purchase_Orders.item_cost = item["pivot"]["cost"]
-                    Purchase_Orders.item_unit = item["pivot"]["unit"]
-                    Purchase_Orders.item_unit_to_storage_factor = item["pivot"]["unit_to_storage_factor"]
-                    Purchase_Orders.item_quantity_received = item["pivot"]["quantity_received"]
-                    Purchase_Orders.item_sku = item["sku"]
-                    Purchase_Orders.item_storage_unit =  item["storage_unit"]
-                    Purchase_Orders.item_ingredient_unit = item["ingredient_unit"]
-                    Purchase_Orders.supplier_id = responseDataDetails["data"]["supplier"]["id"]
-                    Purchase_Orders.supplier_name = responseDataDetails["data"]["supplier"]["name"]
-                    Purchase_Orders.submitter_id = responseDataDetails["data"]["submitter"]["id"]
-                    Purchase_Orders.submitter_name = responseDataDetails["data"]["submitter"]["name"]
-                    Purchase_Orders.branch_id = responseDataDetails["data"]["branch"]["id"]
-                    Purchase_Orders.branch_name = responseDataDetails["data"]["branch"]["name"]
-                    Purchase_Orders.creator_id = responseDataDetails["data"]["creator"]["id"]
-                    Purchase_Orders.creator_name = responseDataDetails["data"]["creator"]["name"]
-                    Purchase_Orders.poster_id = responseDataDetails["data"]["poster"]["id"]
-                    Purchase_Orders.poster_name = responseDataDetails["data"]["poster"]["name"]
+            Purchase_Orders.submitter_id = item["submitter"]["id"]
+            Purchase_Orders.submitter_name = item["submitter"]["name"]
+        except:
+            Purchase_Orders.submitter_id = ''
+            Purchase_Orders.submitter_name = ''
+        
+        Purchase_Orders.branch_id = item["branch"]["id"]
+        Purchase_Orders.branch_name = item["branch"]["name"]
+        
+        Purchase_Orders.creator_id = item["creator"]["id"]
+        Purchase_Orders.creator_name = item["creator"]["name"]
+
+        try:
+            Purchase_Orders.poster_id = item["poster"]["id"]
+            Purchase_Orders.poster_name = item["poster"]["name"]
+        except:
+            Purchase_Orders.poster_id = ''
+            Purchase_Orders.poster_name = ''        
+
+        
+        for item in item["items"]:
+            try:
+                #print(item)
+                Purchase_Orders.item_id = item["id"]
+                #print(Purchase_Orders.item_id)
+                Purchase_Orders.item_name = item["name"]
+                Purchase_Orders.item_quantity = item["pivot"]["quantity"]
+                Purchase_Orders.item_cost = item["pivot"]["cost"]
+                Purchase_Orders.item_unit = item["pivot"]["unit"]
+                Purchase_Orders.item_unit_to_storage_factor = item["pivot"]["unit_to_storage_factor"]
+                Purchase_Orders.item_quantity_received = item["pivot"]["quantity_received"]
+                Purchase_Orders.item_sku = item["sku"]
+                
+                Purchase_Orders.item_storage_unit =  item["storage_unit"]
+                Purchase_Orders.item_ingredient_unit = item["ingredient_unit"]
+
+                #print(3)
                     
-                    tuple_data_details = (Purchase_Orders.purchase_order_id, Purchase_Orders.business_date, Purchase_Orders.delivery_date, Purchase_Orders.reference, 
+                tuple_data_details = (Purchase_Orders.purchase_order_id, Purchase_Orders.business_date, Purchase_Orders.delivery_date, Purchase_Orders.reference, 
                         Purchase_Orders.additional_cost, Purchase_Orders.status, Purchase_Orders.notes, Purchase_Orders.created_at,
                         Purchase_Orders.updated_at, Purchase_Orders.reviewed_at, Purchase_Orders.closed_at, Purchase_Orders.submitted_at, 
                         Purchase_Orders.item_id, Purchase_Orders.item_name, Purchase_Orders.item_quantity,Purchase_Orders.item_cost,
@@ -163,11 +176,11 @@ while True:
                         Purchase_Orders.submitter_id, Purchase_Orders.submitter_name, Purchase_Orders.creator_id, Purchase_Orders.creator_name,
                         Purchase_Orders.poster_id, Purchase_Orders.poster_name
                         )
-                    details_rows.append(tuple_data_details)
-                except:
-                    pass
-        except KeyError:
-            pass
+
+                details_rows.append(tuple_data_details)
+            except:
+                pass
+
 
     #print(details_rows)
     try:
