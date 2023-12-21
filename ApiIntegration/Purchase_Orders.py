@@ -14,10 +14,7 @@ previous_date = datetime.now().date()-timedelta(days=1)
 
 # Format the previous date as "YYYY-MM-DD"
 previous_date = previous_date.strftime('%Y-%m-%d')
-previous_date = '2023-11-19'
-print(previous_date)
-
-#exit()
+#print(previous_date)
 
 #read project directory
 env_path = os.path.dirname(__file__).replace('\\','/')
@@ -34,7 +31,7 @@ try:
     baseURL = os.environ.get("baseURL")
     url = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster"#&filter[created_on]="+previous_date
     url_ext = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster"#&filter[created_on]="+previous_date
-    print(url)
+    #print(url)
     
     Authorization = os.environ.get("Authorization")
     #exit()
@@ -88,17 +85,23 @@ class Purchase_Orders:
 cursor.execute("truncate table Purchase_Orders")
 page = 1
 while True:
-    params = {'page': page, 'per_page': 10000}
+    #print('page')
+    param = {'page': page, 'per_page': 100000}
 
     current_attempt_m = 0 #current attempt on master api
-    max_attempts_m = 5
+    max_attempts_m = 5000
+
     while current_attempt_m < max_attempts_m:
-        try:
-            response = requests.request("GET", url_ext, headers=headers, data=payload, params=params)
-            if response.status_code==200:
-                current_attempt_m = max_attempts_m
-                responseDataMaster=response.json()
-        except:
+        #print('Number of attempt: ' + str(current_attempt_m))
+        response = requests.request("GET", url_ext, headers=headers, data=payload, params=param)
+        #print(response)
+        
+        if response.status_code==200:
+            #print('Status code: '+ str(response.status_code))
+            current_attempt_m = max_attempts_m
+            responseDataMaster=response.json()
+        else:
+            #print('Exception')
             time.sleep(60)
             current_attempt_m +=1
             
@@ -147,7 +150,6 @@ while True:
             Purchase_Orders.poster_id = ''
             Purchase_Orders.poster_name = ''        
 
-        
         for item in item["items"]:
             try:
                 #print(item)
@@ -164,7 +166,6 @@ while True:
                 Purchase_Orders.item_storage_unit =  item["storage_unit"]
                 Purchase_Orders.item_ingredient_unit = item["ingredient_unit"]
 
-                #print(3)
                     
                 tuple_data_details = (Purchase_Orders.purchase_order_id, Purchase_Orders.business_date, Purchase_Orders.delivery_date, Purchase_Orders.reference, 
                         Purchase_Orders.additional_cost, Purchase_Orders.status, Purchase_Orders.notes, Purchase_Orders.created_at,
