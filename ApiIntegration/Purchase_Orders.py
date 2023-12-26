@@ -29,8 +29,8 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster"#&filter[created_on]="+previous_date
-    url_ext = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster"#&filter[created_on]="+previous_date
+    url = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster&filter[created_on]="+previous_date
+    url_ext = baseURL+"purchase_orders?include=items, supplier,submitter,branch,creator,poster&filter[created_on]="+previous_date
     #print(url)
     
     Authorization = os.environ.get("Authorization")
@@ -83,13 +83,16 @@ class Purchase_Orders:
 
 
 cursor.execute("truncate table Purchase_Orders")
+cursor.execute("insert into Run_Log(API_Name) values('Purchase_Orders')")
+
 page = 1
+row_cnt = 0
 while True:
-    #print('page')
+    #print(page)
     param = {'page': page, 'per_page': 100000}
 
     current_attempt_m = 0 #current attempt on master api
-    max_attempts_m = 5000
+    max_attempts_m = 50
 
     while current_attempt_m < max_attempts_m:
         #print('Number of attempt: ' + str(current_attempt_m))
@@ -99,6 +102,7 @@ while True:
         if response.status_code==200:
             #print('Status code: '+ str(response.status_code))
             current_attempt_m = max_attempts_m
+            #print(current_attempt_m)
             responseDataMaster=response.json()
         else:
             #print('Exception')
@@ -106,7 +110,11 @@ while True:
             current_attempt_m +=1
             
     objects = responseDataMaster["data"]
+    #print(len(objects))
+
     if len(objects)==0:
+        #cursor.execute("UPDATE Run_Log SET End_Time = SYSTIMESTAMP, Total_Record_Count= "+str(row_cnt)+" WHERE API_Name = 'Purchase_Orders'  AND TRUNC(Start_Time) = TRUNC(SYSDATE)")
+        #connection.commit()
         exit()
 
     master_rows = []
@@ -179,8 +187,9 @@ while True:
                         )
 
                 details_rows.append(tuple_data_details)
+                row_cnt = row_cnt+1
             except:
-                pass
+                cursor.execute("insert into Error_Log(API_Name,Error_Description) values('Purchase_Orders','Item Data Processing Error')")
 
 
     #print(details_rows)
@@ -197,9 +206,7 @@ while True:
                         :15, :16, :17, :18, :19, :20, :21, :22, :23, :24, :25, :26, :27, :28, :29, :30, :31, :32)", details_rows)
         connection.commit()
     except:
-        pass
+        cursor.execute("insert into Error_Log(API_Name,Error_Description) values('Purchase_Orders','Records Insertion Error')")
 
     page += 1
- 
-    
 

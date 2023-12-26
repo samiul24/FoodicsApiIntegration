@@ -14,6 +14,7 @@ previous_date = datetime.now().date()-timedelta(days=1)
 
 # Format the previous date as "YYYY-MM-DD"
 previous_date = previous_date.strftime('%Y-%m-%d')
+#print(previous_date)
 
 
 #read project directory
@@ -29,8 +30,10 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"inventory_transactions"
-    url_ext = baseURL+"inventory_transactions?filter[created_on]="+previous_date  
+    #url = baseURL+"inventory_transactions"
+    url =     baseURL+"inventory_transactions?include=branch,other_branch,order,purchase_order,transfer_order,items,supplier,creator,poster"#&filter[created_on]="+previous_date
+    url_ext = baseURL+"inventory_transactions?include=branch,other_branch,order,purchase_order,transfer_order,items,supplier,creator,poster"#&filter[created_on]="+previous_date
+    url_sup = baseURL+"suppliers"
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -53,6 +56,7 @@ class InvTran:
     other_branch_name: str
     supplier_id: str
     supplier_name: str
+    supplier_code: str
     order_id: str
     order_type: str
     creator_id: str
@@ -83,34 +87,40 @@ class InvTran:
     updated_at: datetime
     posted_at: datetime
 
-#cursor.execute("truncate table INVENTORY_TRANSACTION")
-page = 1
+cursor.execute("truncate table INVENTORY_TRANSACTION")
+cursor.execute("insert into Run_Log(API_Name) values('Inventory_Transaction')")
 
+page = 1
+row_cnt = 0
 while True:
-    params = {'page': page, 'per_page': 500}
+    param = {'page': page, 'per_page': 1000000}
 
     current_attempt_m = 0 #current attempt on master api
-    max_attempts_m = 5
-    while current_attempt_m < max_attempts_m:
-        try:
-            response = requests.request("GET", url_ext, headers=headers, data=payload, params=params)
-            if response.status_code==200:
-                current_attempt_m = max_attempts_m
-                responseDataMaster=response.json()
+    max_attempts_m = 50
 
-        except:
+    while current_attempt_m < max_attempts_m:
+        #print('Number of attempt: ' + str(current_attempt_m))
+        response = requests.request("GET", url_ext, headers=headers, data=payload, params=param)
+        if response.status_code==200:
+            current_attempt_m = max_attempts_m
+            responseDataMaster=response.json()
+
+        else:
+            #print('Exception')
             time.sleep(60)
             current_attempt_m +=1
 
     objects = responseDataMaster["data"]
     if len(objects)==0:
+        #cursor.execute("UPDATE Run_Log SET End_Time = SYSTIMESTAMP, Total_Record_Count= "+str(row_cnt)+" WHERE API_Name = 'Inventory_Transaction'  AND TRUNC(Start_Time) = TRUNC(SYSDATE)")
+        #connection.commit()
         exit()
         
     master_rows = []
     details_rows = []
     for m_item in responseDataMaster["data"]:
         InvTran.inventory_transaction_id = m_item["id"]
-        print(InvTran.inventory_transaction_id)
+        #print(InvTran.inventory_transaction_id)
         InvTran.business_date = m_item["business_date"]
         InvTran.reference = m_item["reference"]
         InvTran.type = m_item["type"]
@@ -123,32 +133,71 @@ while True:
         InvTran.created_at = m_item["created_at"]
         InvTran.updated_at = m_item["updated_at"]
         InvTran.posted_at = m_item["posted_at"]
-            
-        current_attempt_d = 0
-        max_attempts_d = 5
-        while current_attempt_d<max_attempts_d:
-            try:
-                response = requests.request("GET", url+"/"+m_item["id"], headers=headers, data=payload)
-                if response.status_code==200:
-                    current_attempt_d = max_attempts_d
-                    responseDataDetails=response.json()
-            except:
-                time.sleep(60)
-                current_attempt_d +=1
+
+        if m_item["purchase_order"] == None:
+            InvTran.purchase_order_id = ''
+        else:
+            InvTran.purchase_order_id = m_item["purchase_order"]["id"]
+                    
+        if m_item["transfer_order"] == None:
+            InvTran.transfer_order_id = ''
+        else:
+            InvTran.transfer_order_id = m_item["transfer_order"]["id"]
+        if m_item["order"] != None:
+            InvTran.order_id = m_item["order"]["id"]
+            InvTran.order_type = str(m_item["order"]["type"])
+        else:
+            InvTran.order_id = ''
+            InvTran.order_type = ''
+
+        if m_item["supplier"] != None:
+            InvTran.supplier_id  = m_item["supplier"]["id"]
+            InvTran.supplier_name = m_item["supplier"]["name"]
+            if len(InvTran.supplier_id)>0:
+                try:
+                    ResSup = requests.request("GET", url_sup+"/"+InvTran.supplier_id, headers=headers, data=payload)
+                    if ResSup.status_code == 200:
+                        ResSupData = ResSup.json()
+                        InvTran.supplier_code = ResSupData["data"]["code"]
+                except:
+                    InvTran.supplier_code = ''
+        else: 
+            InvTran.supplier_id = ''
+            InvTran.supplier_name = ''
+            InvTran.supplier_code = ''
+        #print('Sup Id: '+InvTran.supplier_id)
+        #print('Sup Code: '+InvTran.supplier_code)
+        if m_item["branch"] != None:
+            InvTran.branch_id = m_item["branch"]["id"]
+            InvTran.branch_name = m_item["branch"]["name"]
+        else:
+            InvTran.branch_id = ''
+            InvTran.branch_name = ''
+
+        if m_item["other_branch"] != None:
+            InvTran.other_branch_id = m_item["other_branch"]["id"]
+            InvTran.other_branch_name = m_item["other_branch"]["name"]
+        else:
+            InvTran.other_branch_id = ''
+            InvTran.other_branch_name = ''   
+
+        if m_item["creator"] != None:
+            InvTran.creator_id = m_item["creator"]["id"]
+            InvTran.creator_name = m_item["creator"]["name"]
+        else:
+            InvTran.creator_id = ''
+            InvTran.creator_name = ''
+
+        if m_item["poster"] != None:
+            InvTran.poster_id = m_item["poster"]["id"]
+            InvTran.poster_name  = m_item["poster"]["name"]
+        else:
+            InvTran.poster_id = ''
+            InvTran.poster_name = ''            
 
         try:
-            for d_item in responseDataDetails["data"]["items"]:
+            for d_item in m_item["items"]:
                 try:
-                    if responseDataDetails["data"]["purchase_order"] == None:
-                        InvTran.purchase_order_id = ''
-                    else:
-                        InvTran.purchase_order_id = responseDataDetails["data"]["purchase_order"]["id"]
-                    
-                    if responseDataDetails["data"]["transfer_order"] == None:
-                        InvTran.transfer_order_id = ''
-                    else:
-                        InvTran.transfer_order_id = responseDataDetails["data"]["transfer_order"]["id"]
-
                     if d_item["id"] != None:
                         InvTran.item_id = d_item["id"]
                     else:
@@ -168,48 +217,6 @@ while True:
                         InvTran.item_cost  = d_item["pivot"]["cost"]
                     else:
                         InvTran.item_cost = 0
-                    
-                    if responseDataDetails["data"]["order"] != None:
-                        InvTran.order_id = responseDataDetails["data"]["order"]["id"]
-                        InvTran.order_type = str(responseDataDetails["data"]["order"]["type"])
-                    else:
-                        InvTran.order_id = ''
-                        InvTran.order_type = ''
-
-                    if responseDataDetails["data"]["supplier"] != None:
-                        InvTran.supplier_id  = responseDataDetails["data"]["supplier"]["id"]
-                        InvTran.supplier_name = responseDataDetails["data"]["supplier"]["name"]
-                    else: 
-                        InvTran.supplier_id = ''
-                        InvTran.supplier_name = ''
-
-                    if responseDataDetails["data"]["branch"] != None:
-                        InvTran.branch_id = responseDataDetails["data"]["branch"]["id"]
-                        InvTran.branch_name = responseDataDetails["data"]["branch"]["name"]
-                    else:
-                        InvTran.branch_id = ''
-                        InvTran.branch_name = ''
-
-                    if responseDataDetails["data"]["other_branch"] != None:
-                        InvTran.other_branch_id = responseDataDetails["data"]["other_branch"]["id"]
-                        InvTran.other_branch_name = responseDataDetails["data"]["other_branch"]["name"]
-                    else:
-                        InvTran.other_branch_id = ''
-                        InvTran.other_branch_name = ''   
-
-                    if responseDataDetails["data"]["creator"] != None:
-                        InvTran.creator_id = responseDataDetails["data"]["creator"]["id"]
-                        InvTran.creator_name = responseDataDetails["data"]["creator"]["name"]
-                    else:
-                        InvTran.creator_id = ''
-                        InvTran.creator_name = ''
-
-                    if responseDataDetails["data"]["poster"] != None:
-                        InvTran.poster_id = responseDataDetails["data"]["poster"]["id"]
-                        InvTran.poster_name  = responseDataDetails["data"]["poster"]["name"]
-                    else:
-                        InvTran.poster_id = ''
-                        InvTran.poster_name = ''
 
                     #print('page: '+ str(page))
                     tuple_data_details = (InvTran.inventory_transaction_id, InvTran.business_date, InvTran.reference, InvTran.type, 
@@ -219,29 +226,26 @@ while True:
                                           InvTran.supplier_id, InvTran.supplier_name, InvTran.branch_id, InvTran.branch_name,
                                           InvTran.creator_id, InvTran.creator_name, InvTran.poster_id, InvTran.poster_name,
                                           InvTran.order_id, InvTran.order_type, InvTran.other_branch_id, InvTran.other_branch_name,
-                                          InvTran.transfer_order_id
+                                          InvTran.transfer_order_id, InvTran.supplier_code
                                           
                                           )
                     details_rows.append(tuple_data_details)
                 except:
                     pass
         except KeyError:
-            pass
+            cursor.execute("insert into Error_Log(API_Name,Error_Description) values('Inventory_Transaction','D_Item Data Processing Error')")
     #print(details_rows)
     try:
         cursor.executemany("insert into INVENTORY_TRANSACTION (inventory_transaction_id, business_date, reference, type, \
                         status, paid_tax, additional_cost, notes, invoice_number, invoice_date, created_at, updated_at, posted_at,\
                         purchase_order_id, item_id, item_name, item_quantity, item_cost, supplier_id, supplier_name,\
                         branch_id, branch_name, creator_id, creator_name, poster_id, poster_name,\
-                        order_id, order_type, other_branch_id, other_branch_name, transfer_order_id ) \
+                        order_id, order_type, other_branch_id, other_branch_name, transfer_order_id, supplier_code ) \
                         values(:1, TO_DATE(:2,'YYYY-MM-DD'), :3, :4, :5, :6, :7, :8, :9, TO_DATE(:10,'YYYY-MM-DD'), \
                        TO_DATE(:11,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:12,'YYYY-MM-DD HH24:MI:SS'), TO_DATE(:13,'YYYY-MM-DD HH24:MI:SS'),\
-                       :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24, :25, :26, :27, :28, :29, :30, :31)", details_rows)
+                       :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24, :25, :26, :27, :28, :29, :30, :31, :32)", details_rows)
         connection.commit()
     except:
-        pass
+        cursor.execute("insert into Error_Log(API_Name,Error_Description) values('Inventory_Transaction','Records Insertion Error')")
 
     page += 1
- 
-        
-

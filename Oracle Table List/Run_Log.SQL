@@ -1,0 +1,8 @@
+CREATE TABLE Run_Log
+(
+    API_Name VARCHAR2(255),
+    Start_Time TIMESTAMP DEFAULT SYSTIMESTAMP,
+    End_Time TIMESTAMP,
+    Total_Record_Count NUMBER,
+    System_Date DATE DEFAULT SYSDATE
+); 
