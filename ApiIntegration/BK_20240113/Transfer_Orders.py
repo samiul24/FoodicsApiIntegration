@@ -71,7 +71,6 @@ class Transfer_Orders:
     poster_name: str
 
 #cursor.execute("truncate table Transfer_Orders")
-cursor.execute("insert into Run_Log(API_Name) values('Transfer_Orders')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 500}

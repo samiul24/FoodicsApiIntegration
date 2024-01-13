@@ -55,7 +55,6 @@ class delivery_zones:
     branch_id: str
 
 #cursor.execute("truncate table delivery_zones")
-cursor.execute("insert into Run_Log(API_Name) values('Delivery_Zones')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 500}

@@ -29,7 +29,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"devices?filter[created_on]="+previous_date
+    url = baseURL+"devices"#?filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -68,7 +68,6 @@ class Devices:
     first_activation_at : datetime
 
 #cursor.execute("truncate table Devices")
-cursor.execute("insert into Run_Log(API_Name) values('Devices')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -92,6 +91,7 @@ while True:
     rows = []
     try:
         for item in responseData["data"]:
+            print(1)
             Devices.in_use = item["in_use"]
             Devices.code  = item["code"]
             Devices.device_id  = item["id"]
@@ -113,6 +113,7 @@ while True:
             Devices.updated_at  = item["updated_at"]
             Devices.deleted_at  = item["deleted_at"]
             Devices.first_activation_at  = item["first_activation_at"]
+            print(2)
 
             tuple_data_details = ( 
                                     Devices.in_use

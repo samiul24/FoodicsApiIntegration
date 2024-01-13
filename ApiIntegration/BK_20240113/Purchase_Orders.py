@@ -14,9 +14,7 @@ previous_date = datetime.now().date()-timedelta(days=1)
 
 # Format the previous date as "YYYY-MM-DD"
 previous_date = previous_date.strftime('%Y-%m-%d')
-#previous_date ='2023-12-27'
 #print(previous_date)
-
 
 #read project directory
 env_path = os.path.dirname(__file__).replace('\\','/')
@@ -84,7 +82,7 @@ class Purchase_Orders:
     submitted_at: datetime
 
 
-#cursor.execute("truncate table Purchase_Orders")
+cursor.execute("truncate table Purchase_Orders")
 cursor.execute("insert into Run_Log(API_Name) values('Purchase_Orders')")
 
 page = 1

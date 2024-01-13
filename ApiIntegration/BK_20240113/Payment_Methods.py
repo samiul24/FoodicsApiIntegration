@@ -58,7 +58,6 @@ class Payment_Methods:
 
 
 #cursor.execute("truncate table Payment_Methods")
-cursor.execute("insert into Run_Log(API_Name) values('Payment_Methods')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 500}

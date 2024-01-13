@@ -29,7 +29,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"gift_card_products?include=tags,category&filter[created_on]="+previous_date
+    url = baseURL+"gift_card_products?include=tags,category"#&filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -62,7 +62,6 @@ class Gift_Card_Products:
     deleted_at: datetime
 
 #cursor.execute("truncate table Gift_Card_Products")
-cursor.execute("insert into Run_Log(API_Name) values('Gift_Card_Products')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}

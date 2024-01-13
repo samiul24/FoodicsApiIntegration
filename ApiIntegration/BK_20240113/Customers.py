@@ -29,8 +29,8 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"customers&filter[created_on]="+previous_date
-    #print(url)
+    url = baseURL+"customers"#&filter[created_on]="+previous_date
+    print(url)
     Authorization = os.environ.get("Authorization")
 except:
     pass
@@ -65,8 +65,7 @@ class Customers:
     updated_at: datetime
     deleted_at: datetime
 
-#cursor.execute("truncate table Customers")
-cursor.execute("insert into Run_Log(API_Name) values('Customers')")
+cursor.execute("truncate table Customers")
 page = 1
 while True:
     params = {'page': page, 'per_page': 500}

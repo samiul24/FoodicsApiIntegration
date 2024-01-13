@@ -28,13 +28,13 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"suppliers"#?filter[created_on]="+previous_date
+    url = baseURL+"suppliers?filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
     pass
 
-#data load from List Purchase Order API to Suppliers
+#data load from List Suppliers API to Suppliers
 payload = {}
 headers = {
   'Authorization': Authorization,
@@ -55,19 +55,25 @@ class Suppliers:
     updated_at: datetime
     deleted_at: datetime
 
-cursor.execute("truncate table Suppliers")
+#cursor.execute("truncate table Suppliers")
+cursor.execute("insert into Run_Log(API_Name) values('Suppliers')")
 page = 1
 while True:
-    params = {'page': page, 'per_page': 50}
+    params = {'page': page, 'per_page': 500}
     #print(page)
     current_attempt_m = 0 #current attempt on master api
     max_attempts_m = 5
     while current_attempt_m < max_attempts_m:
         try:
             response = requests.request("GET", url, headers=headers, data=payload, params=params)
+            
             if response.status_code==200:
                 current_attempt_m = max_attempts_m
                 responseData=response.json()
+            else:
+                time.sleep(60)
+                current_attempt_m +=1
+
         except:
             time.sleep(60)
             current_attempt_m +=1

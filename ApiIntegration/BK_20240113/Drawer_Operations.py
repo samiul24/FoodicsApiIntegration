@@ -29,7 +29,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"drawer_operations?filter[created_on]="+previous_date
+    url = baseURL+"drawer_operations"#?filter[created_on]="+previous_date
     print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -54,7 +54,6 @@ class drawer_operations:
     updated_at: datetime
 
 #cursor.execute("truncate table drawer_operations")
-cursor.execute("insert into Run_Log(API_Name) values('Drawer_Operations')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}

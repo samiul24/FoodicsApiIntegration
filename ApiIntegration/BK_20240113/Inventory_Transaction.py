@@ -14,7 +14,6 @@ previous_date = datetime.now().date()-timedelta(days=1)
 
 # Format the previous date as "YYYY-MM-DD"
 previous_date = previous_date.strftime('%Y-%m-%d')
-#previous_date ='2023-12-31'
 #print(previous_date)
 
 
@@ -32,8 +31,8 @@ cursor = connection.cursor()
 try:
     baseURL = os.environ.get("baseURL")
     #url = baseURL+"inventory_transactions"
-    url =     baseURL+"inventory_transactions?include=branch,other_branch,order,purchase_order,transfer_order,items,supplier,creator,poster&filter[created_on]="+previous_date
-    url_ext = baseURL+"inventory_transactions?include=branch,other_branch,order,purchase_order,transfer_order,items,supplier,creator,poster&filter[created_on]="+previous_date
+    url =     baseURL+"inventory_transactions?include=branch,other_branch,order,purchase_order,transfer_order,items,supplier,creator,poster"#&filter[created_on]="+previous_date
+    url_ext = baseURL+"inventory_transactions?include=branch,other_branch,order,purchase_order,transfer_order,items,supplier,creator,poster"#&filter[created_on]="+previous_date
     url_sup = baseURL+"suppliers"
     #print(url)
     Authorization = os.environ.get("Authorization")
@@ -88,7 +87,7 @@ class InvTran:
     updated_at: datetime
     posted_at: datetime
 
-#cursor.execute("truncate table INVENTORY_TRANSACTION")
+cursor.execute("truncate table INVENTORY_TRANSACTION")
 cursor.execute("insert into Run_Log(API_Name) values('Inventory_Transaction')")
 
 page = 1

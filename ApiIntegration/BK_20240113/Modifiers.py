@@ -55,7 +55,6 @@ class Modifiers:
     deleted_at: datetime
 
 #cursor.execute("truncate table Modifiers")
-cursor.execute("insert into Run_Log(API_Name) values('Modifiers')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 500}

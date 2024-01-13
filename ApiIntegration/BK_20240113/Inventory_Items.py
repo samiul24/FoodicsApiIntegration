@@ -66,7 +66,7 @@ class Inventory_Items:
 #cursor.execute("truncate table Inventory_Items")
 page = 1
 while True:
-    params = {'page': page, 'per_page': 500}
+    params = {'page': page, 'per_page': 50}
     #print(page)
     current_attempt_m = 0 #current attempt on master api
     max_attempts_m = 5

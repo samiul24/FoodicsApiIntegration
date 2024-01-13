@@ -65,7 +65,6 @@ class Discounts:
     branch_name: str
 
 #cursor.execute("truncate table Discounts")
-cursor.execute("insert into Run_Log(API_Name) values('Discounts')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -103,7 +102,7 @@ while True:
         Discounts.created_at = item["created_at"]
         Discounts.updated_at = item["updated_at"]
         Discounts.deleted_at = item["deleted_at"]
-        print(Discounts.order_types)
+        #print(Discounts.order_types)
 
         if item["products"]!=None and len(item["products"])>0:
             for product in item["products"]:

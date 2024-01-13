@@ -29,8 +29,8 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"products?include=discounts,timed_events,category,tax_group,tags,groups,branches,modifiers&filter[created_on]="+previous_date
-    #print(url)
+    url = baseURL+"products?include=discounts,timed_events,category,tax_group,tags,groups,branches,modifiers"#?filter[created_on]="+previous_date
+    print(url)
     Authorization = os.environ.get("Authorization")
 except:
     pass
@@ -75,8 +75,7 @@ class Products:
     modifier_id: str
     modifier_name: str
 
-#cursor.execute("truncate table Products")
-cursor.execute("insert into Run_Log(API_Name) values('Products')")
+cursor.execute("truncate table Products")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -95,6 +94,7 @@ while True:
 
     objects = responseData["data"]
     if len(objects)==0:
+        print(1)
         exit()
         
     rows = []

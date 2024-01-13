@@ -29,7 +29,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"branches?include=tax_group,products,modifier_options,combos,tags,discounts,charges&filter[created_on]="+previous_date
+    url = baseURL+"branches?include=tax_group,products,modifier_options,combos,tags,discounts,charges"#&filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -59,7 +59,6 @@ class Branches:
     address: str
 
 #cursor.execute("truncate table Branches")
-cursor.execute("insert into Run_Log(API_Name) values('Branches')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -136,3 +135,5 @@ while True:
         pass
     page += 1
  
+        
+

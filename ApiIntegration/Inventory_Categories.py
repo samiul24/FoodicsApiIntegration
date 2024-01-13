@@ -53,10 +53,10 @@ class Inventory_Categories:
     updated_at: datetime
     deleted_at: datetime
 
-cursor.execute("truncate table Inventory_Categories")
+#cursor.execute("truncate table Inventory_Categories")
 page = 1
 while True:
-    params = {'page': page, 'per_page': 50}
+    params = {'page': page, 'per_page': 500}
     #print(page)
     current_attempt_m = 0 #current attempt on master api
     max_attempts_m = 5

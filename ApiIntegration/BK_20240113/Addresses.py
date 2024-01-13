@@ -45,7 +45,7 @@ headers = {
 
 @dataclass
 class Addresses:
-    address_id: str
+    addresses_id: str
     city_id: str
     name: str
     details: str
@@ -59,7 +59,6 @@ class Addresses:
     delivery_zone_id: str
 
 #cursor.execute("truncate table Addresses")
-cursor.execute("insert into Run_Log(API_Name) values('Addresses')")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}
@@ -83,7 +82,7 @@ while True:
     rows = []
     try:
         for item in responseData["data"]:
-            Addresses.address_id = item["id"]
+            Addresses.addresses_id = item["id"]
             Addresses.city_id = item["city_id"]         
             Addresses.name = item["name"]         
             Addresses.details = item["details"]            
@@ -106,7 +105,7 @@ while True:
                 Addresses.delivery_zone_id = ''
 
             tuple_data_details = ( 
-                                    Addresses.address_id,
+                                    Addresses.addresses_id,
                                     Addresses.city_id,
                                     Addresses.name,
                                     Addresses.details,        
@@ -125,7 +124,7 @@ while True:
         pass
 
     try:
-        cursor.executemany("insert into Addresses (Addresses.address_id, Addresses.city_id, Addresses.name, \
+        cursor.executemany("insert into Addresses (Addresses.addresses_id, Addresses.city_id, Addresses.name, \
                                                    Addresses.details, Addresses.description, Addresses.latitude, \
                                                    Addresses.longitude, Addresses.created_at, Addresses.updated_at, Addresses.deleted_at,\
                                                    Addresses.customer_id, Addresses.delivery_zone_id) \

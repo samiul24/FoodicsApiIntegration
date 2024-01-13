@@ -27,7 +27,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"orders?include=branch,promotion,customer,customer_address,charges,payments,payments.payment_method,products.product,combos&filter[created_on]="+previous_date
+    url = baseURL+"orders?include=branch,promotion,customer,customer_address,charges,payments,payments.payment_method,products.product,combos"#&filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
@@ -105,10 +105,7 @@ class Orders:
     charges_tax_id: str
     charges_tax_name: str
 
-
-## Clear any record that have carry forwarded from previous day
-## cursor.execute("delete from Orders where to_char(BUSINESS_DATE,'DD-MM-YYYY') = to_char(trunc(sysdate-1),'DD-MM-YYYY')")
-cursor.execute("insert into Run_Log(API_Name) values('Orders')")
+cursor.execute("truncate table Orders")
 page = 1
 while True:
     params = {'page': page, 'per_page': 5000}

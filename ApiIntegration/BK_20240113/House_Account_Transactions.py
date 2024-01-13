@@ -29,7 +29,7 @@ cursor = connection.cursor()
 #baseURL & token read
 try:
     baseURL = os.environ.get("baseURL")
-    url = baseURL+"house_account_transactions?include=user,order,customer&filter[created_on]="+previous_date
+    url = baseURL+"house_account_transactions?include=user,order,customer"#&filter[created_on]="+previous_date
     #print(url)
     Authorization = os.environ.get("Authorization")
 except:
